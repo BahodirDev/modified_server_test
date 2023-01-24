@@ -1,6 +1,6 @@
 const RatingModal = require("../modals/RatingModal");
 const UserModal = require("../modals/UserModal");
-// const User = require("../modals/UserModal");
+
 const generateAuthToken = require("../utils/generateAuthTokem");
 const { comparePasswords, hashPassword } = require("../utils/hashedPassword");
 
@@ -10,47 +10,50 @@ const registerUser = async (req, res) => {
     const { name, lastName, login, password, isTeacher, status } = req.body;
     if (!(name && lastName && login && password)) {
       return res.json({ error: "All inputs are required" });
-    }
-
-    const userExists = await UserModal.findOne({ login });
-    if (userExists) {
-      return res.json({ error: "Bunday foydalanuvchi allaqachon mavjud" });
     } else {
-      const hashedPassword = hashPassword(password);
-      const user = await User.create({
-        name,
-        lastName,
-        login: login.toLowerCase(),
-        password: hashedPassword,
-        status,
-        isTeacher
-      });
-      res
-        .status(201)
-        .json({
-          access_token: generateAuthToken(
-            user._id,
-            user.name,
-            user.lastName,
-            user.login,
-            user.isAdmin,
-            user.isTeacher,
-            user.isAllowed,
-            user.status,
-            user.phoneNumber
-          ),
-          userCreated: {
-            _id: user._id,
-            name: user.name,
-            lastName: user.lastName,
-            login: user.login,
-            isAdmin: user.isAdmin,
-            isAllowed: user.isAllowed,
-            status: user.status,
-            isTeacher: user.isTeacher,
-            number: user.phoneNumber
-          },
+
+
+      const userExists = await UserModal.find({ login });
+      console.log('user=>', userExists);
+      if (userExists.length) {
+        return res.json({ error: "Bunday foydalanuvchi allaqachon mavjud" });
+      } else {
+        const hashedPassword = hashPassword(password);
+        const user = await UserModal.create({
+          name,
+          lastName,
+          login: login.toLowerCase(),
+          password: hashedPassword,
+          status,
+          isTeacher
         });
+        res
+          .status(201)
+          .json({
+            access_token: generateAuthToken(
+              user._id,
+              user.name,
+              user.lastName,
+              user.login,
+              user.isAdmin,
+              user.isTeacher,
+              user.isAllowed,
+              user.status,
+              user.phoneNumber
+            ),
+            userCreated: {
+              _id: user._id,
+              name: user.name,
+              lastName: user.lastName,
+              login: user.login,
+              isAdmin: user.isAdmin,
+              isAllowed: user.isAllowed,
+              status: user.status,
+              isTeacher: user.isTeacher,
+              number: user.phoneNumber
+            },
+          });
+      }
     }
 
   } catch (error) {
@@ -65,7 +68,7 @@ const loginUser = async (req, res) => {
       return res.json({ error: "All inputs are required" });
     }
 
-    const user = await User.findOne({ login });
+    const user = await UserModal.findOne({ login });
     if (user && comparePasswords(password, user.password)) {
       return res
         .json({
@@ -104,7 +107,7 @@ const loginUser = async (req, res) => {
 
 const getTeacher = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await UserModal.findById(req.user._id);
     if (user) {
       res.json(user)
     } else {
@@ -139,7 +142,7 @@ const confirmRate = async (req, res) => {
 
 const getUser = async (req, res) => {
   try {
-    let user = await User.findById(req.user._id).select('-password');
+    let user = await UserModal.findById(req.user._id).select('-password');
     if (user) {
       res.json(user)
     } else {
@@ -152,9 +155,9 @@ const getUser = async (req, res) => {
 const editUsers = async (req, res) => {
   try {
     const { name, number, password, address, lastName, login } = req.body;
-    let user = await User.findById({ _id: req.user._id });
+    let user = await UserModal.findById({ _id: req.user._id });
 
-    let isExist = await User.find({ login });
+    let isExist = await UserModal.find({ login });
     if (isExist.length > 0) {
       res.json({ error: "Login bilan foydalanuvchi topildi", user: isExist })
     } else {
@@ -220,7 +223,7 @@ const getUserRating = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    let users = await User.find({});
+    let users = await UserModal.find({});
     res.json(users)
   } catch (error) {
     console.log(error);
@@ -230,7 +233,7 @@ const adminEditUsers = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, lastName, phoneNumber, address, password, login, status, isAdmin, isTeacher, isAllowed, } = req.body;
-    let user = await User.findByIdAndUpdate({ _id: id }, {
+    let user = await UserModal.findByIdAndUpdate({ _id: id }, {
       isAllowed: isAllowed
     }, { new: true });
     // user.name = name;
@@ -278,7 +281,7 @@ const adminEditUsers = async (req, res) => {
 
 const delUsers = async (req, res) => {
   try {
-    let user = await User.findByIdAndRemove(req.params.id);
+    let user = await UserModal.findByIdAndRemove(req.params.id);
     res.json(user)
   } catch (error) {
     console.log(error);

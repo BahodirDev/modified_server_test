@@ -1,19 +1,19 @@
 const express = require('express');
 const mongoose =require('mongoose');
-require('dotenv').config();
+const dot = require('dotenv');
 const cors = require('cors');
 const app = express();
-
-
+const server = require('./routes/index');
+dot.config();
 // app
 app.use(express.json());
 app.use(cors())
 app.use(express.urlencoded({extended:false}));
 
-app.use('/api',require('./routes/server'));
+app.use('/',server);
 
-mongoose.connect(process.env.MONGO_URI_C,()=>{
-    console.log('DB connected =>', process.env.MONGO_URI_C);
+mongoose.connect(process.env.MONGO_URI,()=>{
+    console.log('DB connected =>', process.env.MONGO_URI);
 })
 
 const PORT =  process.env.PORT || 5000 

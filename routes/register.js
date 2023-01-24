@@ -5,6 +5,6 @@ const generateAuthToken = require('../utils/generateAuthTokem');
 const { hashPassword } = require('../utils/hashedPassword');
 const route = Router();
 
-route.post('/register',registerUser);
+route.post('/',registerUser);
 
 module.exports = route;
